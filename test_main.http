@@ -1,0 +1,17 @@
+# Test your FastAPI endpoints
+
+GET http://127.0.0.1:8000/
+Accept: application/json
+
+###
+
+GET http://127.0.0.1:8000/hello/User
+Accept: application/json
+
+###
+
+### 현재 가상환경 파일 텍스트화
+### pip freeze > requirements.txt
+
+### 이전 버전 파일을 새로운 가상환경에서 똑같이 세팅
+### pip install -r requirements.txt
