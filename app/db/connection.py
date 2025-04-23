@@ -32,6 +32,16 @@ def get_click_log():
         conn.close()
     return click_log_df
 
+# 카테고리 데이터 받아오기
+def get_category_data():
+    conn = connection_pool.get_connection()
+    try:
+        query = "SELECT category_id, parent_id , name FROM Category"
+        category_data_df = pd.read_sql(query, conn)
+    finally:
+        conn.close()
+    return category_data_df
+
 # 벡터화용 상품테이블 정보 가져오기
 def get_product_data():
     conn = connection_pool.get_connection()

@@ -1,6 +1,6 @@
 import pandas as pd
 
-from app.db.connection import get_product_data
+from app.db.connection import get_product_data, get_category_data
 
 
 def format_recommendation_prompt(product_id: int, recommended_items: list) -> str:
@@ -16,17 +16,28 @@ def format_recommendation_prompt(product_id: int, recommended_items: list) -> st
     Returns:
         str: 자연어 추천 메시지
     """
-    df = get_product_data()
-    base_product = df[df['product_id'] == product_id].iloc[0]
+    product_df = get_product_data()
+    category_df = get_category_data()
+
+    # 카테고리 이름이 상품 name 하고 겹치니 category_name으로 변경
+    category_df.rename(columns={'name': 'category_name'}, inplace=True)
+    # 상품 데이터와 카테고리 데이터 병합
+    merged_df = product_df.merge(category_df, how="left", on="category_id")
+
+
+    # 기준 상품 정보
+    base_product = merged_df[merged_df['product_id'] == product_id].iloc[0]
     base_name = base_product['name']
 
-    recommended_items = df[df['product_id'].isin(recommended_items)]
+    # 추천 상품들
+    recommended_items_df = merged_df[merged_df['product_id'].isin(recommended_items)]
+
 
     lines = [f"최근에 '{base_name}' 상품을 보셨네요. 이와 유사한 제품들을 추천드립니다:"]
-    for idx, row in recommended_items.iterrows():
+    for idx, row in recommended_items_df.iterrows():
         name = row['name']
         price = row['price']
-        category = row['category_id']
+        category = row['category_name']
         lines.append(f"- '{name}' (가격: {price}원, 카테고리: {category})")
 
     return "\n".join(lines)
