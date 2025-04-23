@@ -13,6 +13,10 @@ router = APIRouter(
 def get_recommendations(product_id: int):
     return recommend_similar_items(product_id)
 
-@router.get("{user_id}")
+@router.get("/user/{user_id}")
 def personal_recommendations(user_id: int):
     return personal_recommend(user_id)
+
+@router.get("test")
+def format_recommendation_prompt():
+    return format_recommendation_prompt()

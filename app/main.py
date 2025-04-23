@@ -2,7 +2,7 @@ from fastapi import FastAPI
 from app.api.recommend import router
 app = FastAPI()
 
-app.include_router(router, prefix="/api/v1")
+app.include_router(router)
 
 
 @app.get("/")
