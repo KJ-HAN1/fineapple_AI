@@ -1,4 +1,5 @@
 import mysql.connector
+import httpx
 from mysql.connector import pooling
 import pandas as pd
 from app.core import config
@@ -66,33 +67,37 @@ def get_product_data():
 #     finally:
 #         conn.close()
 #     return recent_view_df
-def get_recent_view_product_from_els(user_id, index="product-access-*"):
+async def get_recent_view_product_from_els(user_id, index="product-access-*"):
     try:
         query = {
             "query": {
                 "bool": {
                     "must": [
-                        {"term": {"userId.keyword": str(user_id)}},  # userId.keyword 사용
-                        {"term": {"eventType.keyword": "product_access"}}  # eventType도 keyword로 사용
+                        {"term": {"userId.keyword": str(user_id)}},
+                        {"term": {"eventType.keyword": "product_access"}}
                     ]
                 }
             },
-            "sort": [
-                {"@timestamp": {"order": "desc"}}
-            ],
+            "sort": [{"@timestamp": {"order": "desc"}}],
             "size": 1
         }
 
-        response = es.search(index=index, body=query)
-        hits = response["hits"]["hits"]
-        if not hits:
-            return pd.DataFrame()
+        async with httpx.AsyncClient() as client:
+            response = await client.post(
+                f"http://{config.ES_HOST}/{index}/_search",
+                json=query
+            )
+            response.raise_for_status()
+            result = response.json()
+            hits = result["hits"]["hits"]
+            if not hits:
+                return pd.DataFrame()
 
-        doc = hits[0]["_source"]
-        return pd.DataFrame([{
-            "product_id": doc.get("productId"),
-            "clicked_at": doc.get("@timestamp")
-        }])
+            doc = hits[0]["_source"]
+            return pd.DataFrame([{
+                "product_id": doc.get("productId"),
+                "clicked_at": doc.get("@timestamp")
+            }])
     except Exception as e:
         print(f"[ERROR] Elasticsearch 조회 실패: {e}")
         return pd.DataFrame()

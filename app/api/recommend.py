@@ -17,6 +17,3 @@ def get_recommendations(product_id: int):
 def personal_recommendations(user_id: int):
     return personal_recommend(user_id)
 
-@router.get("test")
-def format_recommendation_prompt():
-    return format_recommendation_prompt()
